@@ -7,7 +7,7 @@ setup(
     author_email='jeff.bradberry@gmail.com',
     packages=['mcts'],
     entry_points={
-        'jrb_board.players': 'jrb.mcts = mcts.uct:MonteCarlo',
+        'jrb_board.players': 'jrb.mcts.uct = mcts.uct:MonteCarlo',
     },
     license='LICENSE',
     description="An implementation of UCT Monte Carlo Tree Search.",
