@@ -22,6 +22,12 @@ class MonteCarlo(object):
     def update(self, state):
         self.states.append(state)
 
+    def display(self, state, play):
+        return self.board.display(state, play)
+
+    def winner_message(self, msg):
+        return self.board.winner_message(msg)
+
     def get_play(self):
         # Causes the AI to calculate the best move from the
         # current game state and return it.
@@ -39,12 +45,12 @@ class MonteCarlo(object):
         games = 0
         begin = datetime.datetime.utcnow()
         while datetime.datetime.utcnow() - begin < self.calculation_time:
-            self.random_game()
+            self.run_simulation()
             games += 1
 
         moves_states = [(p, self.board.next_state(state, p)) for p in legal]
 
-        # Display the number of calls of `random_game` and the
+        # Display the number of calls of `run_simulation` and the
         # time elapsed.
         print games, datetime.datetime.utcnow() - begin
 
