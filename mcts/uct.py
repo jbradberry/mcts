@@ -12,6 +12,9 @@ class MonteCarlo(object):
         self.wins = {}
         self.plays = {}
 
+        self.max_depth = 0
+        self.stats = {}
+
         seconds = kwargs.get('time', 30)
         self.calculation_time = datetime.timedelta(seconds=seconds)
         self.max_moves = kwargs.get('max_moves', 100)
@@ -33,6 +36,9 @@ class MonteCarlo(object):
         # Causes the AI to calculate the best move from the
         # current game state and return it.
 
+        self.max_depth = 0
+        self.stats = {}
+
         state = self.states[-1]
         player = self.board.current_player(state)
         legal = self.board.legal_plays(self.states[:])
@@ -49,11 +55,27 @@ class MonteCarlo(object):
             self.run_simulation()
             games += 1
 
-        moves_states = [(p, self.board.next_state(state, p)) for p in legal]
-
         # Display the number of calls of `run_simulation` and the
         # time elapsed.
-        print games, datetime.datetime.utcnow() - begin
+        self.stats.update(games=games, max_depth=self.max_depth,
+                          time=str(datetime.datetime.utcnow() - begin))
+        print self.stats['games'], self.stats['time']
+        print "Maximum depth searched:", self.max_depth
+
+        moves_states = [(p, self.board.next_state(state, p)) for p in legal]
+
+        # Display the stats for each possible play.
+        self.stats['moves'] = sorted(
+            ({'move': p,
+              'percent': 100 * self.wins.get((player, S), 0) / self.plays.get((player, S), 1),
+              'wins': self.wins.get((player, S), 0),
+              'plays': self.plays.get((player, S), 0)}
+             for p, S in moves_states),
+            key=lambda x: (x['percent'], x['plays']),
+            reverse=True
+        )
+        for m in self.stats['moves']:
+            print "{move}: {percent:.2f}% ({wins} / {plays})".format(**m)
 
         # Pick the move with the highest percentage of wins.
         percent_wins, num_moves, move = max(
@@ -63,17 +85,6 @@ class MonteCarlo(object):
              p)
             for p, S in moves_states
         )
-
-        # Display the stats for each possible play.
-        for x in sorted(
-            ((100 * self.wins.get((player, S), 0) /
-              self.plays.get((player, S), 1),
-              self.wins.get((player, S), 0),
-              self.plays.get((player, S), 0), p)
-             for p, S in moves_states),
-            reverse=True
-        ):
-            print "{3}: {0:.2f}% ({1} / {2})".format(*x)
 
         return move
 
@@ -91,7 +102,7 @@ class MonteCarlo(object):
         player = self.board.current_player(state)
 
         expand = True
-        for t in xrange(self.max_moves):
+        for t in xrange(1, self.max_moves + 1):
             legal = self.board.legal_plays(states_copy)
             moves_states = [(p, self.board.next_state(state, p)) for p in legal]
 
@@ -116,6 +127,8 @@ class MonteCarlo(object):
                 expand = False
                 self.plays[(player, state)] = 0
                 self.wins[(player, state)] = 0
+                if t > self.max_depth:
+                    self.max_depth = t
 
             visited_states.add((player, state))
 
