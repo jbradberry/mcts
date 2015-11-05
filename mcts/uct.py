@@ -1,6 +1,7 @@
 from __future__ import division
 
 import datetime
+from math import log, sqrt
 from random import choice
 
 
@@ -101,7 +102,7 @@ class MonteCarlo(object):
                 value, move, state = max(
                     ((wins[(player, S)] / plays[(player, S)]) +
                      self.C * sqrt(log_total / plays[(player, S)]), p, S)
-                    for p, S in states
+                    for p, S in moves_states
                 )
             else:
                 # Otherwise, just make an arbitrary decision.
