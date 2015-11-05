@@ -35,6 +35,6 @@ and then install the requirements ::
 
 The Monte Carlo Tree Search AIs included here are designed to work
 with `jbradberry/boardgame-socketserver
-<https://github.com/jbradberry/boardgame-socketserver>` and
+<https://github.com/jbradberry/boardgame-socketserver>`_ and
 `jbradberry/boardgame-socketplayer
-<https://github.com/jbradberry/boardgame-socketplayer>`.
+<https://github.com/jbradberry/boardgame-socketplayer>`_.
