@@ -15,13 +15,13 @@ class MonteCarlo(object):
         self.max_depth = 0
         self.stats = {}
 
-        seconds = kwargs.get('time', 30)
+        seconds = float(kwargs.get('time', 30))
         self.calculation_time = datetime.timedelta(seconds=seconds)
-        self.max_moves = kwargs.get('max_moves', 100)
+        self.max_moves = int(kwargs.get('max_moves', 100))
 
         # Exploration constant, increase for more exploratory moves,
         # decrease to prefer moves with known higher win rates.
-        self.C = kwargs.get('C', 1.4)
+        self.C = float(kwargs.get('C', 1.4))
 
     def update(self, state):
         self.states.append(state)
