@@ -122,10 +122,10 @@ class MonteCarlo(object):
 
             # `player` here and below refers to the player
             # who moved into that particular state.
-            if expand and (player, state) not in self.plays:
+            if expand and (player, state) not in plays:
                 expand = False
-                self.plays[(player, state)] = 0
-                self.wins[(player, state)] = 0
+                plays[(player, state)] = 0
+                wins[(player, state)] = 0
                 if t > self.max_depth:
                     self.max_depth = t
 
@@ -137,8 +137,8 @@ class MonteCarlo(object):
                 break
 
         for player, state in visited_states:
-            if (player, state) not in self.plays:
+            if (player, state) not in plays:
                 continue
-            self.plays[(player, state)] += 1
+            plays[(player, state)] += 1
             if player == winner:
-                self.wins[(player, state)] += 1
+                wins[(player, state)] += 1
