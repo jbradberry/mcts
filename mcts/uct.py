@@ -1,6 +1,6 @@
 from __future__ import division
 
-import datetime
+import time
 from math import log, sqrt
 from random import choice
 
@@ -15,9 +15,8 @@ class MonteCarlo(object):
         self.max_depth = 0
         self.stats = {}
 
-        seconds = float(kwargs.get('time', 30))
-        self.calculation_time = datetime.timedelta(seconds=seconds)
-        self.max_moves = int(kwargs.get('max_moves', 100))
+        self.calculation_time = float(kwargs.get('time', 30))
+        self.max_moves = int(kwargs.get('max_moves', 1000))
 
         # Exploration constant, increase for more exploratory moves,
         # decrease to prefer moves with known higher win rates.
@@ -50,15 +49,15 @@ class MonteCarlo(object):
             return legal[0]
 
         games = 0
-        begin = datetime.datetime.utcnow()
-        while datetime.datetime.utcnow() - begin < self.calculation_time:
+        begin = time.time()
+        while time.time() - begin < self.calculation_time:
             self.run_simulation()
             games += 1
 
         # Display the number of calls of `run_simulation` and the
         # time elapsed.
         self.stats.update(games=games, max_depth=self.max_depth,
-                          time=str(datetime.datetime.utcnow() - begin))
+                          time=str(time.time() - begin))
         print self.stats['games'], self.stats['time']
         print "Maximum depth searched:", self.max_depth
 
