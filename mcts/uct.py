@@ -5,12 +5,19 @@ from math import log, sqrt
 from random import choice
 
 
+class Stat(object):
+    __slots__ = ('value', 'visits')
+
+    def __init__(self, value=0, visits=0):
+        self.value = value
+        self.visits = visits
+
+
 class MonteCarlo(object):
     def __init__(self, board, **kwargs):
         self.board = board
         self.history = []
-        self.wins = {}
-        self.plays = {}
+        self.stats = {}
 
         self.max_depth = 0
         self.data = {}
@@ -66,9 +73,9 @@ class MonteCarlo(object):
         # Display the stats for each possible play.
         self.data['moves'] = sorted(
             ({'move': p,
-              'percent': 100 * self.wins.get((player, S), 0) / self.plays.get((player, S), 1),
-              'wins': self.wins.get((player, S), 0),
-              'plays': self.plays.get((player, S), 0)}
+              'percent': 100 * self.stats[(player, S)].value / self.stats[(player, S)].visits,
+              'wins': self.stats[(player, S)].value,
+              'plays': self.stats[(player, S)].visits}
              for p, S in moves_states),
             key=lambda x: (x['percent'], x['plays']),
             reverse=True
@@ -78,9 +85,8 @@ class MonteCarlo(object):
 
         # Pick the move with the highest percentage of wins.
         percent_wins, num_moves, move = max(
-            (self.wins.get((player, S), 0) /
-             self.plays.get((player, S), 1),
-             self.plays.get((player, S), 0),
+            (self.stats[(player, S)].value / self.stats[(player, S)].visits,
+             self.stats[(player, S)].visits,
              p)
             for p, S in moves_states
         )
@@ -93,7 +99,7 @@ class MonteCarlo(object):
 
         # A bit of an optimization here, so we have a local
         # variable lookup instead of an attribute access each loop.
-        plays, wins = self.plays, self.wins
+        stats = self.stats
 
         visited_states = set()
         history_copy = self.history[:]
@@ -105,13 +111,13 @@ class MonteCarlo(object):
             legal = self.board.legal_plays(history_copy)
             moves_states = [(p, self.board.next_state(state, p)) for p in legal]
 
-            if all(plays.get((player, S)) for p, S in moves_states):
+            if all((player, S) in stats for p, S in moves_states):
                 # If we have stats on all of the legal moves here, use UCB1.
                 log_total = log(
-                    sum(plays[(player, S)] for p, S in moves_states))
+                    sum(stats[(player, S)].visits for p, S in moves_states))
                 value, move, state = max(
-                    ((wins[(player, S)] / plays[(player, S)]) +
-                     self.C * sqrt(log_total / plays[(player, S)]), p, S)
+                    ((stats[(player, S)].value / stats[(player, S)].visits) +
+                     self.C * sqrt(log_total / stats[(player, S)].visits), p, S)
                     for p, S in moves_states
                 )
             else:
@@ -122,10 +128,9 @@ class MonteCarlo(object):
 
             # `player` here and below refers to the player
             # who moved into that particular state.
-            if expand and (player, state) not in plays:
+            if expand and (player, state) not in stats:
                 expand = False
-                plays[(player, state)] = 0
-                wins[(player, state)] = 0
+                stats[(player, state)] = Stat()
                 if t > self.max_depth:
                     self.max_depth = t
 
@@ -137,20 +142,19 @@ class MonteCarlo(object):
                 break
 
         for player, state in visited_states:
-            if (player, state) not in plays:
+            if (player, state) not in stats:
                 continue
-            plays[(player, state)] += 1
+            S = stats[(player, state)]
+            S.visits += 1
             if player == winner:
-                wins[(player, state)] += 1
+                S.value += 1
 
 
 class ValueMonteCarlo(object):
     def __init__(self, board, **kwargs):
         self.board = board
         self.history = []
-
-        self.values = {}
-        self.plays = {}
+        self.stats = {}
 
         self.max_depth = 0
         self.data = {}
@@ -174,9 +178,6 @@ class ValueMonteCarlo(object):
     def get_play(self):
         # Causes the AI to calculate the best move from the
         # current game state and return it.
-
-        self.values.clear()
-        self.plays.clear()
 
         self.max_depth = 0
         self.data = {}
@@ -209,9 +210,9 @@ class ValueMonteCarlo(object):
         # Display the stats for each possible play.
         self.data['moves'] = sorted(
             ({'move': p,
-              'average': self.values.get((player, S), 0) / self.plays.get((player, S), 1),
-              'sum': self.values.get((player, S), 0),
-              'plays': self.plays.get((player, S), 0)}
+              'average': self.stats[(player, S)].value / self.stats[(player, S)].visits,
+              'sum': self.stats[(player, S)].value,
+              'plays': self.stats[(player, S)].visits}
              for p, S in moves_states),
             key=lambda x: (x['average'], x['plays']),
             reverse=True
@@ -221,9 +222,8 @@ class ValueMonteCarlo(object):
 
         # Pick the move with the highest average value.
         average, num_moves, move = max(
-            (self.values.get((player, S), 0) /
-             self.plays.get((player, S), 1),
-             self.plays.get((player, S), 0),
+            (self.stats[(player, S)].value / self.stats[(player, S)].visits,
+             self.stats[(player, S)].visits,
              p)
             for p, S in moves_states
         )
@@ -236,7 +236,7 @@ class ValueMonteCarlo(object):
 
         # A bit of an optimization here, so we have a local
         # variable lookup instead of an attribute access each loop.
-        plays, values = self.plays, self.values
+        stats = self.stats
 
         visited_states = set()
         history_copy = self.history[:]
@@ -248,13 +248,13 @@ class ValueMonteCarlo(object):
             legal = self.board.legal_plays(history_copy)
             moves_states = [(p, self.board.next_state(state, p)) for p in legal]
 
-            if all(plays.get((player, S)) for p, S in moves_states):
+            if all((player, S) in stats for p, S in moves_states):
                 # If we have stats on all of the legal moves here, use UCB1.
                 log_total = log(
-                    sum(plays[(player, S)] for p, S in moves_states))
+                    sum(stats[(player, S)].visits for p, S in moves_states))
                 value, move, state = max(
-                    ((values[(player, S)] / plays[(player, S)]) +
-                     self.C * sqrt(log_total / plays[(player, S)]), p, S)
+                    ((stats[(player, S)].value / stats[(player, S)].visits) +
+                     self.C * sqrt(log_total / stats[(player, S)].visits), p, S)
                     for p, S in moves_states
                 )
             else:
@@ -265,10 +265,9 @@ class ValueMonteCarlo(object):
 
             # `player` here and below refers to the player
             # who moved into that particular state.
-            if expand and (player, state) not in plays:
+            if expand and (player, state) not in stats:
                 expand = False
-                plays[(player, state)] = 0
-                values[(player, state)] = 0
+                stats[(player, state)] = Stat()
                 if t > self.max_depth:
                     self.max_depth = t
 
@@ -281,11 +280,12 @@ class ValueMonteCarlo(object):
 
         player_values = {}
         for player, state in visited_states:
-            if (player, state) not in plays:
+            if (player, state) not in stats:
                 continue
             if player not in player_values:
                 player_values[player] = self.board.end_value(history_copy, player)
 
-            plays[(player, state)] += 1
+            S = stats[(player, state)]
+            S.visits += 1
             if player_values[player] is not None:
-                values[(player, state)] += player_values[player]
+                S.value += player_values[player]
