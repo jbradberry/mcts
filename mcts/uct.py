@@ -8,12 +8,12 @@ from random import choice
 class MonteCarlo(object):
     def __init__(self, board, **kwargs):
         self.board = board
-        self.states = []
+        self.history = []
         self.wins = {}
         self.plays = {}
 
         self.max_depth = 0
-        self.stats = {}
+        self.data = {}
 
         self.calculation_time = float(kwargs.get('time', 30))
         self.max_moves = int(kwargs.get('max_moves', 1000))
@@ -23,7 +23,7 @@ class MonteCarlo(object):
         self.C = float(kwargs.get('C', 1.4))
 
     def update(self, state):
-        self.states.append(state)
+        self.history.append(state)
 
     def display(self, state, play):
         return self.board.display(state, play)
@@ -36,11 +36,11 @@ class MonteCarlo(object):
         # current game state and return it.
 
         self.max_depth = 0
-        self.stats = {}
+        self.data = {}
 
-        state = self.states[-1]
+        state = self.history[-1]
         player = self.board.current_player(state)
-        legal = self.board.legal_plays(self.states[:])
+        legal = self.board.legal_plays(self.history[:])
 
         # Bail out early if there is no real choice to be made.
         if not legal:
@@ -56,15 +56,15 @@ class MonteCarlo(object):
 
         # Display the number of calls of `run_simulation` and the
         # time elapsed.
-        self.stats.update(games=games, max_depth=self.max_depth,
-                          time=str(time.time() - begin))
-        print self.stats['games'], self.stats['time']
+        self.data.update(games=games, max_depth=self.max_depth,
+                         time=str(time.time() - begin))
+        print self.data['games'], self.data['time']
         print "Maximum depth searched:", self.max_depth
 
         moves_states = [(p, self.board.next_state(state, p)) for p in legal]
 
         # Display the stats for each possible play.
-        self.stats['moves'] = sorted(
+        self.data['moves'] = sorted(
             ({'move': p,
               'percent': 100 * self.wins.get((player, S), 0) / self.plays.get((player, S), 1),
               'wins': self.wins.get((player, S), 0),
@@ -73,7 +73,7 @@ class MonteCarlo(object):
             key=lambda x: (x['percent'], x['plays']),
             reverse=True
         )
-        for m in self.stats['moves']:
+        for m in self.data['moves']:
             print "{move}: {percent:.2f}% ({wins} / {plays})".format(**m)
 
         # Pick the move with the highest percentage of wins.
@@ -96,13 +96,13 @@ class MonteCarlo(object):
         plays, wins = self.plays, self.wins
 
         visited_states = set()
-        states_copy = self.states[:]
-        state = states_copy[-1]
+        history_copy = self.history[:]
+        state = history_copy[-1]
         player = self.board.current_player(state)
 
         expand = True
         for t in xrange(1, self.max_moves + 1):
-            legal = self.board.legal_plays(states_copy)
+            legal = self.board.legal_plays(history_copy)
             moves_states = [(p, self.board.next_state(state, p)) for p in legal]
 
             if all(plays.get((player, S)) for p, S in moves_states):
@@ -118,7 +118,7 @@ class MonteCarlo(object):
                 # Otherwise, just make an arbitrary decision.
                 move, state = choice(moves_states)
 
-            states_copy.append(state)
+            history_copy.append(state)
 
             # `player` here and below refers to the player
             # who moved into that particular state.
@@ -132,7 +132,7 @@ class MonteCarlo(object):
             visited_states.add((player, state))
 
             player = self.board.current_player(state)
-            winner = self.board.winner(states_copy)
+            winner = self.board.winner(history_copy)
             if winner:
                 break
 
@@ -147,13 +147,13 @@ class MonteCarlo(object):
 class ValueMonteCarlo(object):
     def __init__(self, board, **kwargs):
         self.board = board
-        self.states = []
+        self.history = []
 
         self.values = {}
         self.plays = {}
 
         self.max_depth = 0
-        self.stats = {}
+        self.data = {}
 
         self.calculation_time = float(kwargs.get('time', 30))
         self.max_moves = int(kwargs.get('max_moves', 1000))
@@ -163,7 +163,7 @@ class ValueMonteCarlo(object):
         self.C = float(kwargs.get('C', 1.4))
 
     def update(self, state):
-        self.states.append(state)
+        self.history.append(state)
 
     def display(self, state, play):
         return self.board.display(state, play)
@@ -179,11 +179,11 @@ class ValueMonteCarlo(object):
         self.plays.clear()
 
         self.max_depth = 0
-        self.stats = {}
+        self.data = {}
 
-        state = self.states[-1]
+        state = self.history[-1]
         player = self.board.current_player(state)
-        legal = self.board.legal_plays(self.states[:])
+        legal = self.board.legal_plays(self.history[:])
 
         # Bail out early if there is no real choice to be made.
         if not legal:
@@ -199,15 +199,15 @@ class ValueMonteCarlo(object):
 
         # Display the number of calls of `run_simulation` and the
         # time elapsed.
-        self.stats.update(games=games, max_depth=self.max_depth,
-                          time=str(time.time() - begin))
-        print self.stats['games'], self.stats['time']
+        self.data.update(games=games, max_depth=self.max_depth,
+                         time=str(time.time() - begin))
+        print self.data['games'], self.data['time']
         print "Maximum depth searched:", self.max_depth
 
         moves_states = [(p, self.board.next_state(state, p)) for p in legal]
 
         # Display the stats for each possible play.
-        self.stats['moves'] = sorted(
+        self.data['moves'] = sorted(
             ({'move': p,
               'average': self.values.get((player, S), 0) / self.plays.get((player, S), 1),
               'sum': self.values.get((player, S), 0),
@@ -216,7 +216,7 @@ class ValueMonteCarlo(object):
             key=lambda x: (x['average'], x['plays']),
             reverse=True
         )
-        for m in self.stats['moves']:
+        for m in self.data['moves']:
             print "{move}: {average:.1f} ({sum} / {plays})".format(**m)
 
         # Pick the move with the highest average value.
@@ -239,13 +239,13 @@ class ValueMonteCarlo(object):
         plays, values = self.plays, self.values
 
         visited_states = set()
-        states_copy = self.states[:]
-        state = states_copy[-1]
+        history_copy = self.history[:]
+        state = history_copy[-1]
         player = self.board.current_player(state)
 
         expand = True
         for t in xrange(1, self.max_moves + 1):
-            legal = self.board.legal_plays(states_copy)
+            legal = self.board.legal_plays(history_copy)
             moves_states = [(p, self.board.next_state(state, p)) for p in legal]
 
             if all(plays.get((player, S)) for p, S in moves_states):
@@ -261,7 +261,7 @@ class ValueMonteCarlo(object):
                 # Otherwise, just make an arbitrary decision.
                 move, state = choice(moves_states)
 
-            states_copy.append(state)
+            history_copy.append(state)
 
             # `player` here and below refers to the player
             # who moved into that particular state.
@@ -275,7 +275,7 @@ class ValueMonteCarlo(object):
             visited_states.add((player, state))
 
             player = self.board.current_player(state)
-            winner = self.board.winner(states_copy)
+            winner = self.board.winner(history_copy)
             if winner:
                 break
 
@@ -284,7 +284,7 @@ class ValueMonteCarlo(object):
             if (player, state) not in plays:
                 continue
             if player not in player_values:
-                player_values[player] = self.board.end_value(states_copy, player)
+                player_values[player] = self.board.end_value(history_copy, player)
 
             plays[(player, state)] += 1
             if player_values[player] is not None:
