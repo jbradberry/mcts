@@ -23,23 +23,23 @@ class MonteCarlo(object):
         self.data = {}
 
         self.calculation_time = float(kwargs.get('time', 30))
-        self.max_moves = int(kwargs.get('max_moves', 1000))
+        self.max_actions = int(kwargs.get('max_actions', 1000))
 
-        # Exploration constant, increase for more exploratory moves,
-        # decrease to prefer moves with known higher win rates.
+        # Exploration constant, increase for more exploratory actions,
+        # decrease to prefer actions with known higher win rates.
         self.C = float(kwargs.get('C', 1.4))
 
     def update(self, state):
         self.history.append(state)
 
-    def display(self, state, play):
-        return self.board.display(state, play)
+    def display(self, state, action):
+        return self.board.display(state, action)
 
     def winner_message(self, msg):
         return self.board.winner_message(msg)
 
-    def get_play(self):
-        # Causes the AI to calculate the best move from the
+    def get_action(self):
+        # Causes the AI to calculate the best action from the
         # current game state and return it.
 
         self.max_depth = 0
@@ -47,7 +47,7 @@ class MonteCarlo(object):
 
         state = self.history[-1]
         player = self.board.current_player(state)
-        legal = self.board.legal_plays(self.history[:])
+        legal = self.board.legal_actions(self.history[:])
 
         # Bail out early if there is no real choice to be made.
         if not legal:
@@ -68,30 +68,30 @@ class MonteCarlo(object):
         print self.data['games'], self.data['time']
         print "Maximum depth searched:", self.max_depth
 
-        moves_states = [(p, self.board.next_state(state, p)) for p in legal]
+        actions_states = [(p, self.board.next_state(state, p)) for p in legal]
 
-        # Display the stats for each possible play.
-        self.data['moves'] = sorted(
-            ({'move': p,
+        # Display the stats for each possible action.
+        self.data['actions'] = sorted(
+            ({'action': p,
               'percent': 100 * self.stats[(player, S)].value / self.stats[(player, S)].visits,
               'wins': self.stats[(player, S)].value,
               'plays': self.stats[(player, S)].visits}
-             for p, S in moves_states),
+             for p, S in actions_states),
             key=lambda x: (x['percent'], x['plays']),
             reverse=True
         )
-        for m in self.data['moves']:
-            print "{move}: {percent:.2f}% ({wins} / {plays})".format(**m)
+        for m in self.data['actions']:
+            print "{action}: {percent:.2f}% ({wins} / {plays})".format(**m)
 
-        # Pick the move with the highest percentage of wins.
-        percent_wins, num_moves, move = max(
+        # Pick the action with the highest percentage of wins.
+        percent_wins, num_actions, action = max(
             (self.stats[(player, S)].value / self.stats[(player, S)].visits,
              self.stats[(player, S)].visits,
              p)
-            for p, S in moves_states
+            for p, S in actions_states
         )
 
-        return move
+        return action
 
     def run_simulation(self):
         # Plays out a "random" game from the current position,
@@ -107,22 +107,22 @@ class MonteCarlo(object):
         player = self.board.current_player(state)
 
         expand = True
-        for t in xrange(1, self.max_moves + 1):
-            legal = self.board.legal_plays(history_copy)
-            moves_states = [(p, self.board.next_state(state, p)) for p in legal]
+        for t in xrange(1, self.max_actions + 1):
+            legal = self.board.legal_actions(history_copy)
+            actions_states = [(p, self.board.next_state(state, p)) for p in legal]
 
-            if all((player, S) in stats for p, S in moves_states):
-                # If we have stats on all of the legal moves here, use UCB1.
+            if all((player, S) in stats for p, S in actions_states):
+                # If we have stats on all of the legal actions here, use UCB1.
                 log_total = log(
-                    sum(stats[(player, S)].visits for p, S in moves_states))
-                value, move, state = max(
+                    sum(stats[(player, S)].visits for p, S in actions_states))
+                value, action, state = max(
                     ((stats[(player, S)].value / stats[(player, S)].visits) +
                      self.C * sqrt(log_total / stats[(player, S)].visits), p, S)
-                    for p, S in moves_states
+                    for p, S in actions_states
                 )
             else:
                 # Otherwise, just make an arbitrary decision.
-                move, state = choice(moves_states)
+                action, state = choice(actions_states)
 
             history_copy.append(state)
 
@@ -160,23 +160,23 @@ class ValueMonteCarlo(object):
         self.data = {}
 
         self.calculation_time = float(kwargs.get('time', 30))
-        self.max_moves = int(kwargs.get('max_moves', 1000))
+        self.max_actions = int(kwargs.get('max_actions', 1000))
 
-        # Exploration constant, increase for more exploratory moves,
-        # decrease to prefer moves with known higher win rates.
+        # Exploration constant, increase for more exploratory actions,
+        # decrease to prefer actions with known higher win rates.
         self.C = float(kwargs.get('C', 1.4))
 
     def update(self, state):
         self.history.append(state)
 
-    def display(self, state, play):
-        return self.board.display(state, play)
+    def display(self, state, action):
+        return self.board.display(state, action)
 
     def winner_message(self, msg):
         return self.board.winner_message(msg)
 
-    def get_play(self):
-        # Causes the AI to calculate the best move from the
+    def get_action(self):
+        # Causes the AI to calculate the best action from the
         # current game state and return it.
 
         self.max_depth = 0
@@ -184,7 +184,7 @@ class ValueMonteCarlo(object):
 
         state = self.history[-1]
         player = self.board.current_player(state)
-        legal = self.board.legal_plays(self.history[:])
+        legal = self.board.legal_actions(self.history[:])
 
         # Bail out early if there is no real choice to be made.
         if not legal:
@@ -205,30 +205,30 @@ class ValueMonteCarlo(object):
         print self.data['games'], self.data['time']
         print "Maximum depth searched:", self.max_depth
 
-        moves_states = [(p, self.board.next_state(state, p)) for p in legal]
+        actions_states = [(p, self.board.next_state(state, p)) for p in legal]
 
-        # Display the stats for each possible play.
-        self.data['moves'] = sorted(
-            ({'move': p,
+        # Display the stats for each possible action.
+        self.data['actions'] = sorted(
+            ({'action': p,
               'average': self.stats[(player, S)].value / self.stats[(player, S)].visits,
               'sum': self.stats[(player, S)].value,
               'plays': self.stats[(player, S)].visits}
-             for p, S in moves_states),
+             for p, S in actions_states),
             key=lambda x: (x['average'], x['plays']),
             reverse=True
         )
-        for m in self.data['moves']:
-            print "{move}: {average:.1f} ({sum} / {plays})".format(**m)
+        for m in self.data['actions']:
+            print "{action}: {average:.1f} ({sum} / {plays})".format(**m)
 
-        # Pick the move with the highest average value.
-        average, num_moves, move = max(
+        # Pick the action with the highest average value.
+        average, num_actions, action = max(
             (self.stats[(player, S)].value / self.stats[(player, S)].visits,
              self.stats[(player, S)].visits,
              p)
-            for p, S in moves_states
+            for p, S in actions_states
         )
 
-        return move
+        return action
 
     def run_simulation(self):
         # Plays out a "random" game from the current position,
@@ -244,22 +244,22 @@ class ValueMonteCarlo(object):
         player = self.board.current_player(state)
 
         expand = True
-        for t in xrange(1, self.max_moves + 1):
-            legal = self.board.legal_plays(history_copy)
-            moves_states = [(p, self.board.next_state(state, p)) for p in legal]
+        for t in xrange(1, self.max_actions + 1):
+            legal = self.board.legal_actions(history_copy)
+            actions_states = [(p, self.board.next_state(state, p)) for p in legal]
 
-            if all((player, S) in stats for p, S in moves_states):
-                # If we have stats on all of the legal moves here, use UCB1.
+            if all((player, S) in stats for p, S in actions_states):
+                # If we have stats on all of the legal actions here, use UCB1.
                 log_total = log(
-                    sum(stats[(player, S)].visits for p, S in moves_states))
-                value, move, state = max(
+                    sum(stats[(player, S)].visits for p, S in actions_states))
+                value, action, state = max(
                     ((stats[(player, S)].value / stats[(player, S)].visits) +
                      self.C * sqrt(log_total / stats[(player, S)].visits), p, S)
-                    for p, S in moves_states
+                    for p, S in actions_states
                 )
             else:
                 # Otherwise, just make an arbitrary decision.
-                move, state = choice(moves_states)
+                action, state = choice(actions_states)
 
             history_copy.append(state)
 
