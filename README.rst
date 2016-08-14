@@ -38,3 +38,15 @@ with `jbradberry/boardgame-socketserver
 <https://github.com/jbradberry/boardgame-socketserver>`_ and
 `jbradberry/boardgame-socketplayer
 <https://github.com/jbradberry/boardgame-socketplayer>`_.
+
+
+Games
+-----
+
+Compatible games that have been implemented include:
+
+* `Reversi <https://github.com/jbradberry/reversi>`_
+* `Connect Four <https://github.com/jbradberry/connect-four>`_
+* `Ultimate (or 9x9) Tic Tac Toe
+  <https://github.com/jbradberry/ultimate_tictactoe>`_
+* `Chong <https://github.com/jbradberry/chong>`_
