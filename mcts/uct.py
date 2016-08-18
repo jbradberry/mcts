@@ -44,6 +44,7 @@ class MonteCarlo(object):
 
         self.max_depth = 0
         self.data = {}
+        self.stats.clear()
 
         state = self.history[-1]
         player = self.board.current_player(state)
@@ -114,10 +115,10 @@ class MonteCarlo(object):
             if all((player, S) in stats for p, S in actions_states):
                 # If we have stats on all of the legal actions here, use UCB1.
                 log_total = log(
-                    sum(stats[(player, S)].visits for p, S in actions_states))
+                    sum(stats[(player, S)].visits for p, S in actions_states) or 1)
                 value, action, state = max(
-                    ((stats[(player, S)].value / stats[(player, S)].visits) +
-                     self.C * sqrt(log_total / stats[(player, S)].visits), p, S)
+                    ((stats[(player, S)].value / (stats[(player, S)].visits or 1)) +
+                     self.C * sqrt(log_total / (stats[(player, S)].visits or 1)), p, S)
                     for p, S in actions_states
                 )
             else:
