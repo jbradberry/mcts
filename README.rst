@@ -29,10 +29,6 @@ or from github, ::
 
     $ pip install git+https://github.com/jbradberry/mcts#egg=mcts
 
-and then install the requirements ::
-
-    $ pip install -r requirements.txt
-
 The Monte Carlo Tree Search AIs included here are designed to work
 with `jbradberry/boardgame-socketserver
 <https://github.com/jbradberry/boardgame-socketserver>`_ and
