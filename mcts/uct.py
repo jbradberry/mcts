@@ -30,13 +30,15 @@ class UCT(object):
         self.C = float(kwargs.get('C', 1.4))
 
     def update(self, state):
-        self.history.append(state)
+        self.history.append(self.board.pack_state(state))
 
     def display(self, state, action):
+        state = self.board.pack_state(state)
+        action = self.board.pack_action(action)
         return self.board.display(state, action)
 
-    def winner_message(self, msg):
-        return self.board.winner_message(msg)
+    def winner_message(self, winners):
+        return self.board.winner_message(winners)
 
     def get_action(self):
         # Causes the AI to calculate the best action from the
@@ -75,7 +77,7 @@ class UCT(object):
             print self.action_template.format(**m)
 
         # Pick the action with the highest average value.
-        return self.data['actions'][0]['action']
+        return self.board.unpack_action(self.data['actions'][0]['action'])
 
     def run_simulation(self):
         # Plays out a "random" game from the current position,
