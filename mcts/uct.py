@@ -56,7 +56,7 @@ class UCT(object):
         if not legal:
             return
         if len(legal) == 1:
-            return legal[0]
+            return self.board.unpack_action(legal[0])
 
         games = 0
         begin = time.time()
