@@ -95,19 +95,20 @@ class UCT(object):
         expand = True
         for t in xrange(1, self.max_actions + 1):
             legal = self.board.legal_actions(history_copy)
-            actions_states = [(p, self.board.next_state(state, p)) for p in legal]
+            new_states = [self.board.next_state(state, p) for p in legal]
 
-            if all((player, S) in stats for p, S in actions_states):
+            if all((player, S) in stats for S in new_states):
                 # If we have stats on all of the legal actions here, use UCB1.
-                log_total = log(
-                    sum(stats[(player, S)].visits for p, S in actions_states) or 1)
+                stat_objs = [stats[(player, S)] for S in new_states]
+                log_total = log(sum(St.visits for St in stat_objs) or 1)
                 value, action, state = max(
-                    ((stats[(player, S)].value / (stats[(player, S)].visits or 1)) +
-                     self.C * sqrt(log_total / (stats[(player, S)].visits or 1)), p, S)
-                    for p, S in actions_states
+                    (St.value / (St.visits or 1) +
+                     self.C * sqrt(log_total / (St.visits or 1)), p, S)
+                    for p, S, St in zip(legal, new_states, stat_objs)
                 )
             else:
                 # Otherwise, just make an arbitrary decision.
+                actions_states = zip(legal, new_states)
                 action, state = choice(actions_states)
 
             history_copy.append(state)
