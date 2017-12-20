@@ -46,7 +46,6 @@ class UCT(object):
 
         self.max_depth = 0
         self.data = {}
-        self.stats.clear()
 
         state = self.history[-1]
         player = self.board.current_player(state)
@@ -72,7 +71,7 @@ class UCT(object):
         print "Maximum depth searched:", self.max_depth
 
         # Store and display the stats for each possible action.
-        self.data['actions'] = self.calculate_action_values(state, player, legal)
+        self.data['actions'] = self.calculate_action_values(state, legal)
         for m in self.data['actions']:
             print self.action_template.format(**m)
 
@@ -97,9 +96,9 @@ class UCT(object):
             legal = self.board.legal_actions(history_copy)
             new_states = [self.board.next_state(state, p) for p in legal]
 
-            if all((player, S) in stats for S in new_states):
+            if all(S in stats for S in new_states):
                 # If we have stats on all of the legal actions here, use UCB1.
-                stat_objs = [stats[(player, S)] for S in new_states]
+                stat_objs = [stats[S] for S in new_states]
                 log_total = log(sum(St.visits for St in stat_objs) or 1)
                 value, action, state = max(
                     (St.value / (St.visits or 1) +
@@ -115,9 +114,9 @@ class UCT(object):
 
             # `player` here and below refers to the player
             # who moved into that particular state.
-            if expand and (player, state) not in stats:
+            if expand and state not in stats:
                 expand = False
-                stats[(player, state)] = Stat()
+                stats[state] = Stat()
                 if t > self.max_depth:
                     self.max_depth = t
 
@@ -130,9 +129,9 @@ class UCT(object):
         # Back-propagation
         end_values = self.end_values(history_copy)
         for player, state in visited_states:
-            if (player, state) not in stats:
+            if state not in stats:
                 continue
-            S = stats[(player, state)]
+            S = stats[state]
             S.visits += 1
             S.value += end_values[player]
 
@@ -144,13 +143,13 @@ class UCTWins(UCT):
         super(UCTWins, self).__init__(board, **kwargs)
         self.end_values = board.win_values
 
-    def calculate_action_values(self, state, player, legal):
+    def calculate_action_values(self, state, legal):
         actions_states = ((p, self.board.next_state(state, p)) for p in legal)
         return sorted(
             ({'action': p,
-              'percent': 100 * self.stats[(player, S)].value / self.stats[(player, S)].visits,
-              'wins': self.stats[(player, S)].value,
-              'plays': self.stats[(player, S)].visits}
+              'percent': 100 * self.stats[S].value / self.stats[S].visits,
+              'wins': self.stats[S].value,
+              'plays': self.stats[S].visits}
              for p, S in actions_states),
             key=lambda x: (x['percent'], x['plays']),
             reverse=True
@@ -164,13 +163,13 @@ class UCTValues(UCT):
         super(UCTValues, self).__init__(board, **kwargs)
         self.end_values = board.points_values
 
-    def calculate_action_values(self, state, player, legal):
+    def calculate_action_values(self, state, legal):
         actions_states = ((p, self.board.next_state(state, p)) for p in legal)
         return sorted(
             ({'action': p,
-              'average': self.stats[(player, S)].value / self.stats[(player, S)].visits,
-              'sum': self.stats[(player, S)].value,
-              'plays': self.stats[(player, S)].visits}
+              'average': self.stats[S].value / self.stats[S].visits,
+              'sum': self.stats[S].value,
+              'plays': self.stats[S].visits}
              for p, S in actions_states),
             key=lambda x: (x['average'], x['plays']),
             reverse=True
