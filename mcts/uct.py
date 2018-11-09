@@ -33,11 +33,9 @@ class UCT(object):
         self.C = float(kwargs.get('C', 1.4))
 
     def update(self, state):
-        self.history.append(self.board.pack_state(state))
+        self.history.append(self.board.to_compact_state(state))
 
     def display(self, state, action):
-        state = self.board.pack_state(state)
-        action = self.board.pack_action(action)
         return self.board.display(state, action)
 
     def winner_message(self, winners):
@@ -57,9 +55,13 @@ class UCT(object):
 
         # Bail out early if there is no real choice to be made.
         if not legal:
-            return
+            return {'type': 'action', 'message': None, 'extras': {}}
         if len(legal) == 1:
-            return self.board.unpack_action(legal[0])
+            return {
+                'type': 'action',
+                'message': self.board.to_json_action(legal[0]),
+                'extras': {},
+            }
 
         games = 0
         begin = time.time()
@@ -79,8 +81,12 @@ class UCT(object):
         for m in self.data['actions']:
             print self.action_template.format(**m)
 
-        # Pick the action with the highest average value.
-        return self.board.unpack_action(self.data['actions'][0]['action'])
+        # Return the action with the highest average value.
+        return {
+            'type': 'action',
+            'message': self.board.to_json_action(self.data['actions'][0]['action']),
+            'extras': self.data.copy(),
+        }
 
     def run_simulation(self):
         # Plays out a "random" game from the current position,
