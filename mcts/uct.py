@@ -177,7 +177,7 @@ class UCTValues(UCT):
         actions_states = ((a, self.board.next_state(state, a)) for a in legal)
         return sorted(
             ({'action': a,
-              'average': self.stats[(player, S)].value / self.stats[(player, S)].visits,
+              'average': self.stats[(player, S)].value / (self.stats[(player, S)].visits or 1),
               'sum': self.stats[(player, S)].value,
               'plays': self.stats[(player, S)].visits}
              for a, S in actions_states),
