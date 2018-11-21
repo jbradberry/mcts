@@ -46,7 +46,7 @@ class UCT(object):
         # current game state and return it.
 
         self.max_depth = 0
-        self.data = {}
+        self.data = {'C': self.C, 'max_actions': self.max_actions}
         self.stats.clear()
 
         state = self.history[-1]
