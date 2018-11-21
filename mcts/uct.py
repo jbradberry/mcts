@@ -46,7 +46,7 @@ class UCT(object):
         # current game state and return it.
 
         self.max_depth = 0
-        self.data = {'C': self.C, 'max_actions': self.max_actions}
+        self.data = {'C': self.C, 'max_actions': self.max_actions, 'name': self.name}
         self.stats.clear()
 
         state = self.history[-1]
@@ -55,12 +55,12 @@ class UCT(object):
 
         # Bail out early if there is no real choice to be made.
         if not legal:
-            return {'type': 'action', 'message': None, 'extras': {}}
+            return {'type': 'action', 'message': None, 'extras': self.data.copy()}
         if len(legal) == 1:
             return {
                 'type': 'action',
                 'message': self.board.to_json_action(legal[0]),
-                'extras': {},
+                'extras': self.data.copy(),
             }
 
         games = 0
@@ -147,6 +147,7 @@ class UCT(object):
 
 
 class UCTWins(UCT):
+    name = "jrb.mcts.uct"
     action_template = "{action}: {percent:.2f}% ({wins} / {plays})"
 
     def __init__(self, board, **kwargs):
@@ -167,6 +168,7 @@ class UCTWins(UCT):
 
 
 class UCTValues(UCT):
+    name = "jrb.mcts.uctv"
     action_template = "{action}: {average:.1f} ({sum} / {plays})"
 
     def __init__(self, board, **kwargs):
