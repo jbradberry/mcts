@@ -77,7 +77,7 @@ class UCT(object):
         print "Maximum depth searched:", self.max_depth
 
         # Store and display the stats for each possible action.
-        self.data['actions'] = self.calculate_action_values(state, player, legal)
+        self.data['actions'] = self.calculate_action_values(self.history, player, legal)
         for m in self.data['actions']:
             print self.action_template.format(**m)
 
@@ -104,7 +104,7 @@ class UCT(object):
         expand = True
         for t in range(1, self.max_actions + 1):
             legal = self.board.legal_actions(history_copy)
-            actions_states = [(a, self.board.next_state(state, a)) for a in legal]
+            actions_states = [(a, self.board.next_state(history_copy, a)) for a in legal]
 
             if expand:
                 if not all((player, S) in stats for a, S in actions_states):
@@ -153,8 +153,8 @@ class UCTWins(UCT):
         super(UCTWins, self).__init__(board, **kwargs)
         self.end_values = board.win_values
 
-    def calculate_action_values(self, state, player, legal):
-        actions_states = ((a, self.board.next_state(state, a)) for a in legal)
+    def calculate_action_values(self, history, player, legal):
+        actions_states = ((a, self.board.next_state(history, a)) for a in legal)
         return sorted(
             ({'action': a,
               'percent': 100 * self.stats[(player, S)].value / (self.stats[(player, S)].visits or 1),
@@ -173,8 +173,8 @@ class UCTValues(UCT):
         super(UCTValues, self).__init__(board, **kwargs)
         self.end_values = board.points_values
 
-    def calculate_action_values(self, state, player, legal):
-        actions_states = ((a, self.board.next_state(state, a)) for a in legal)
+    def calculate_action_values(self, history, player, legal):
+        actions_states = ((a, self.board.next_state(history, a)) for a in legal)
         return sorted(
             ({'action': a,
               'average': self.stats[(player, S)].value / (self.stats[(player, S)].visits or 1),
