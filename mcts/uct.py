@@ -94,7 +94,7 @@ class UCT(object):
 
         # A bit of an optimization here, so we have a local
         # variable lookup instead of an attribute access each loop.
-        stats = self.stats
+        C, stats = self.C, self.stats
 
         visited_states = []
         history_copy = self.history[:]
@@ -113,11 +113,11 @@ class UCT(object):
                         self.max_depth = t
 
                 # If we have stats on all of the legal actions here, use UCB1.
-                log_total = log(
-                    sum(stats[S].visits for a, S in actions_states) or 1)
+                actions_states = [(a, S, stats[S]) for a, S in actions_states]
+                log_total = log(sum(e.visits for a, S, e in actions_states) or 1)
                 values_actions = [
-                    (a, S, (e.value / (e.visits or 1)) + self.C * sqrt(log_total / (e.visits or 1)))
-                    for a, S, e in ((a, S, stats[S]) for a, S in actions_states)
+                    (a, S, (e.value / (e.visits or 1)) + C * sqrt(log_total / (e.visits or 1)))
+                    for a, S, e in actions_states
                 ]
                 max_value = max(v for _, _, v in values_actions)
                 # Filter down to only those actions with maximum value under UCB1.
