@@ -99,7 +99,6 @@ class UCT(object):
         visited_states = []
         history_copy = self.history[:]
         state = history_copy[-1]
-        player = self.board.current_player(state)
 
         expand = True
         for t in range(1, self.max_actions + 1):
@@ -107,43 +106,38 @@ class UCT(object):
             actions_states = [(a, self.board.next_state(history_copy, a)) for a in legal]
 
             if expand:
-                if not all((player, S) in stats for a, S in actions_states):
-                    # `player` here and below refers to the player who
-                    # moved into that particular state.
-                    stats.update(((player, S), Stat()) for a, S in actions_states
-                                 if (player, S) not in stats)
+                if not all(S in stats for a, S in actions_states):
+                    stats.update((S, Stat()) for a, S in actions_states if S not in stats)
                     expand = False
                     if t > self.max_depth:
                         self.max_depth = t
 
                 # If we have stats on all of the legal actions here, use UCB1.
                 log_total = log(
-                    sum(stats[(player, S)].visits for a, S in actions_states) or 1)
+                    sum(stats[S].visits for a, S in actions_states) or 1)
                 values_actions = [
                     (a, S, (e.value / (e.visits or 1)) + self.C * sqrt(log_total / (e.visits or 1)))
-                    for a, S, e in ((a, S, stats[(player, S)]) for a, S in actions_states)
+                    for a, S, e in ((a, S, stats[S]) for a, S in actions_states)
                 ]
                 max_value = max(v for _, _, v in values_actions)
                 # Filter down to only those actions with maximum value under UCB1.
                 actions_states = [(a, S) for a, S, v in values_actions if v == max_value]
 
             action, state = choice(actions_states)
-            visited_states.append((player, state))
+            visited_states.append(state)
             history_copy.append(state)
-            # Who is the next player to take an action?
-            player = self.board.current_player(state)
 
             if self.board.is_ended(history_copy):
                 break
 
         # Back-propagation
         end_values = self.end_values(history_copy)
-        for player, state in visited_states:
-            if (player, state) not in stats:
+        for state in visited_states:
+            if state not in stats:
                 continue
-            S = stats[(player, state)]
+            S = stats[state]
             S.visits += 1
-            S.value += end_values[player]
+            S.value += end_values[self.board.previous_player(state)]
 
 
 class UCTWins(UCT):
@@ -158,9 +152,9 @@ class UCTWins(UCT):
         actions_states = ((a, self.board.next_state(history, a)) for a in legal)
         return sorted(
             ({'action': a,
-              'percent': 100 * self.stats[(player, S)].value / (self.stats[(player, S)].visits or 1),
-              'wins': self.stats[(player, S)].value,
-              'plays': self.stats[(player, S)].visits}
+              'percent': 100 * self.stats[S].value / (self.stats[S].visits or 1),
+              'wins': self.stats[S].value,
+              'plays': self.stats[S].visits}
              for a, S in actions_states),
             key=lambda x: (x['percent'], x['plays']),
             reverse=True
@@ -179,9 +173,9 @@ class UCTValues(UCT):
         actions_states = ((a, self.board.next_state(history, a)) for a in legal)
         return sorted(
             ({'action': a,
-              'average': self.stats[(player, S)].value / (self.stats[(player, S)].visits or 1),
-              'sum': self.stats[(player, S)].value,
-              'plays': self.stats[(player, S)].visits}
+              'average': self.stats[S].value / (self.stats[S].visits or 1),
+              'sum': self.stats[S].value,
+              'plays': self.stats[S].visits}
              for a, S in actions_states),
             key=lambda x: (x['average'], x['plays']),
             reverse=True
