@@ -105,13 +105,13 @@ class UCT(object):
             legal = self.board.legal_actions(history_copy)
             actions_states = [(a, self.board.next_state(history_copy, a)) for a in legal]
 
-            if expand:
-                if not all(S in stats for a, S in actions_states):
-                    stats.update((S, Stat()) for a, S in actions_states if S not in stats)
-                    expand = False
-                    if t > self.max_depth:
-                        self.max_depth = t
+            if expand and not all(S in stats for a, S in actions_states):
+                stats.update((S, Stat()) for a, S in actions_states if S not in stats)
+                expand = False
+                if t > self.max_depth:
+                    self.max_depth = t
 
+            if expand:
                 # If we have stats on all of the legal actions here, use UCB1.
                 actions_states = [(a, S, stats[S]) for a, S in actions_states]
                 log_total = log(sum(e.visits for a, S, e in actions_states) or 1)
