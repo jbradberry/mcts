@@ -51,7 +51,7 @@ class UCT(object):
 
         state = self.history[-1]
         player = self.board.current_player(state)
-        legal = self.board.legal_actions(self.history[:])
+        legal = self.board.legal_actions(state)
 
         # Bail out early if there is no real choice to be made.
         if not legal:
@@ -102,7 +102,7 @@ class UCT(object):
 
         expand = True
         for t in range(1, self.max_actions + 1):
-            legal = self.board.legal_actions(history_copy)
+            legal = self.board.legal_actions(state)
             actions_states = [(a, self.board.next_state(history_copy, a)) for a in legal]
 
             if expand and not all(S in stats for a, S in actions_states):
@@ -127,11 +127,11 @@ class UCT(object):
             visited_states.append(state)
             history_copy.append(state)
 
-            if self.board.is_ended(history_copy):
+            if self.board.is_ended(state):
                 break
 
         # Back-propagation
-        end_values = self.end_values(history_copy)
+        end_values = self.end_values(state)
         for state in visited_states:
             if state not in stats:
                 continue
