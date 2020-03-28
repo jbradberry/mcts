@@ -14,9 +14,8 @@ with `jbradberry/boardgame-socketserver
 Requirements
 ------------
 
-You need to have the following system packages installed:
-
-* Python >= 2.7
+* Python 2.7, 3.5+; PyPy; PyPy3
+* six
 
 
 Getting Started

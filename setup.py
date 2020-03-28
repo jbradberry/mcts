@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from distutils.core import setup
 
 setup(
@@ -10,6 +11,7 @@ setup(
         'jrb_board.players': ['jrb.mcts.uct = mcts.uct:UCTWins',
                               'jrb.mcts.uctv = mcts.uct:UCTValues'],
     },
+    install_requires=['six'],
     license='LICENSE',
     description="An implementation of UCT Monte Carlo Tree Search.",
 )

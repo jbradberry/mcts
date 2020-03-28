@@ -1,8 +1,11 @@
 from __future__ import division
 
+from __future__ import absolute_import
+from __future__ import print_function
 import time
 from math import log, sqrt
 from random import choice
+from six.moves import range
 
 
 class Stat(object):
@@ -73,13 +76,13 @@ class UCT(object):
         # time elapsed.
         self.data.update(games=games, max_depth=self.max_depth,
                          time=str(time.time() - begin))
-        print self.data['games'], self.data['time']
-        print "Maximum depth searched:", self.max_depth
+        print(self.data['games'], self.data['time'])
+        print("Maximum depth searched:", self.max_depth)
 
         # Store and display the stats for each possible action.
         self.data['actions'] = self.calculate_action_values(self.history, player, legal)
         for m in self.data['actions']:
-            print self.action_template.format(**m)
+            print(self.action_template.format(**m))
 
         # Return the action with the highest average value.
         return {
