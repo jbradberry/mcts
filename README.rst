@@ -49,26 +49,26 @@ board for the playouts from a given node ::
 
 These AI players can also take additional arguments:
 
-time
+time (default: 30)
   The amount of thinking time allowed for the AI to make its decision,
-  in seconds (default: 30).  Ex: ``$ board-play.py t3 jrb.mcts.uct -e
-  time=5``
+  in seconds.  Ex: ``$ board-play.py t3 jrb.mcts.uct -e time=5``
 
-max_actions
+max_actions (default: 1000)
   The maximum number of actions, or plays, to allow in one of the
-  simulated playouts before giving up (default: 1000).  Ex: ``$
-  board-play.py t3 jrb.mcts.uct -e max_actions=500``
+  simulated playouts before giving up.  Ex: ``$ board-play.py t3
+  jrb.mcts.uct -e max_actions=500``
 
-C
+C (default: 1.4)
   The exploration vs. exploitation coefficient at the heart of the UCT
-  algorithm (default: 1.4).  Larger values prioritize exploring
-  inadequately covered actions from a node, smaller values prioritize
-  exploiting known higher valued actions.  Experimentation with this
-  variable to find reasonable values for a given game is recommended.
-  Ex: ``$ board-play.py t3 jrb.mcts.uct -e C=3.5``
+  algorithm.  Larger values prioritize exploring inadequately covered
+  actions from a node, smaller values prioritize exploiting known
+  higher valued actions.  Experimentation with this variable to find
+  reasonable values for a given game is recommended.  Ex: ``$
+  board-play.py t3 jrb.mcts.uct -e C=3.5``
 
 The ``-e`` flag may be used multiple times to set additional
 variables.
+
 
 Games
 -----
