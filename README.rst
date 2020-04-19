@@ -80,3 +80,46 @@ Compatible games that have been implemented include:
 * `Ultimate (or 9x9) Tic Tac Toe
   <https://github.com/jbradberry/ultimate_tictactoe>`_
 * `Chong <https://github.com/jbradberry/chong>`_
+
+
+Implementing New Games
+----------------------
+
+In order to create a compatible implementation of a board game, you
+need to implement a class with the following methods::
+
+    class BoardGame:
+        def starting_state(self): pass
+        def display(self, state, action, _unicode=True): pass
+        def to_compact_state(self, data): pass
+        def to_json_state(self, state): pass
+        def to_compact_action(self, action): pass
+        def to_json_action(self, action): pass
+        def from_notation(self, notation): pass
+        def to_notation(self, action): pass
+        def next_state(self, history, action): pass
+        def is_legal(self, state, action): pass
+        def legal_actions(self, state): pass
+        def previous_player(self, state): pass
+        def current_player(self, state): pass
+        def is_ended(self, state): pass
+        def win_values(self, state): pass
+        def points_values(self, state): pass
+        def winner_message(self, winners): pass
+
+
+Additionally, you need to register your new game class so that it can
+be used.  To do this, add at least one entry point in your setup.py
+file under the ``jrb_board.games`` namespace::
+
+    setup(
+        ...
+        entry_points={
+            'jrb_board.games': 'my_game = my_package.my_module:BoardGame',
+        },
+        ...
+    )
+
+
+Then when your package is installed, it will be ready to be used by
+boardgame-socketserver, boardgame-socketplayer, and mcts.
