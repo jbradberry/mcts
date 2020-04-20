@@ -80,3 +80,129 @@ Compatible games that have been implemented include:
 * `Ultimate (or 9x9) Tic Tac Toe
   <https://github.com/jbradberry/ultimate_tictactoe>`_
 * `Chong <https://github.com/jbradberry/chong>`_
+
+
+Implementing New Games
+----------------------
+
+In order to create a compatible implementation of a board game, you
+need to implement a class with the following methods::
+
+    class BoardGame:
+        def starting_state(self):
+            # This method will be called by boardgame-socketserver or other server
+            #
+            # return value: tuple of ints (or some other simple Python built-in)
+
+        def display(self, state, action, **kwargs):
+            # This method will be called by boardgame-socketplayer or
+            # other clients to obtain a console printable
+            # representation of the board.
+            #
+            # state: nested dict, as returned by to_json_state
+            # action: dict, as returned by to_json_action
+            #
+            # return value: unicode string
+
+        def to_compact_state(self, data):
+            # This method turns a nested dict (as sent over the wire
+            # as a json object) into a compact representation of the
+            # state of the game.  This compact state is then managed
+            # as part of the game history, and is used internally by mcts.
+            #
+            # data: nested dict, as returned by to_json_state
+            #
+            # return value: tuple of ints, as returned by starting_state
+
+        def to_json_state(self, state):
+            # This method turns the internal representation of a state
+            # into an object suitable to send over the wire between
+            # client and server.
+            #
+            # state: tuple of ints
+            #
+            # return value: nested dict
+
+        def to_compact_action(self, action):
+            # action: dict
+            #
+            # return value: tuple
+
+        def to_json_action(self, action):
+            # action: tuple
+            #
+            # return value: dict
+
+        def from_notation(self, notation):
+            # notation: unicode string
+            #
+            # return value: tuple
+
+        def to_notation(self, action):
+            # action: tuple
+            #
+            # return value: unicode string
+
+        def next_state(self, history, action):
+            # history: list of states (tuples of ints)
+            # action: tuple
+            #
+            # return value: tuple of ints
+
+        def is_legal(self, state, action):
+            # state: tuple of ints
+            # action: tuple
+            #
+            # return value: bool
+
+        def legal_actions(self, state):
+            # state: tuple of ints
+            #
+            # return value: list of tuples (compact version of actions)
+
+        def previous_player(self, state):
+            # state: tuple of ints
+            #
+            # return value: int
+
+        def current_player(self, state):
+            # state: tuple of ints
+            #
+            # return value: int
+
+        def is_ended(self, state):
+            # state: tuple of ints
+            #
+            # return value: bool
+
+        def win_values(self, state):
+            # state: tuple of ints
+            #
+            # return value: dict or None
+
+        def points_values(self, state):
+            # state: tuple of ints
+            #
+            # return value: dict or None
+
+        def winner_message(self, winners):
+            # winners: dict
+            #
+            # return value: unicode string
+
+
+Additionally, you need to register your new game class so that it can
+be used.  To do this, add at least one entry point in your setup.py
+file under the ``jrb_board.games`` namespace::
+
+    setup(
+        ...
+        entry_points={
+            'jrb_board.games': 'my_game = my_package.my_module:BoardGame',
+        },
+        ...
+    )
+
+
+Then when your package is installed, it will be ready to be used by
+boardgame-socketserver, boardgame-socketplayer, and mcts.
