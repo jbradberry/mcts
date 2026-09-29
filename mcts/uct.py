@@ -12,7 +12,7 @@ class Stat(object):
         self.visits = visits
 
     def __repr__(self):
-        return u"Stat(value={}, visits={})".format(self.value, self.visits)
+        return "Stat(value={}, visits={})".format(self.value, self.visits)
 
 
 class UCT(object):
