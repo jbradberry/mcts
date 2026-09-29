@@ -2,7 +2,6 @@
 import time
 from math import log, sqrt
 from random import choice
-from six.moves import range
 
 
 class Stat(object):
