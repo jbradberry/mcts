@@ -4,7 +4,7 @@ from math import log, sqrt
 from random import choice
 
 
-class Stat(object):
+class Stat:
     __slots__ = ('value', 'visits')
 
     def __init__(self, value=0.0, visits=0):
@@ -15,7 +15,7 @@ class Stat(object):
         return "Stat(value={}, visits={})".format(self.value, self.visits)
 
 
-class UCT(object):
+class UCT:
     def __init__(self, board, **kwargs):
         self.board = board
         self.history = []
