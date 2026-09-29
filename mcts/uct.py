@@ -12,7 +12,7 @@ class Stat:
         self.visits = visits
 
     def __repr__(self):
-        return "Stat(value={}, visits={})".format(self.value, self.visits)
+        return f"Stat(value={self.value}, visits={self.visits})"
 
 
 class UCT:
