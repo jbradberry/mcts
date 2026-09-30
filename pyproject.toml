@@ -1,0 +1,28 @@
+[project]
+name = "MonteCarloTreeSearch"
+version = "0.2dev"
+requires-python = ">= 3.8"
+authors = [
+  {name = "Jeff Bradberry", email = "jeff.bradberry@gmail.com"},
+]
+description = "An implementation of UCT Monte Carlo Tree Search."
+readme = "README.rst"
+license = "MIT"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+]
+
+[project.entry-points."jrb_board.players"]
+"jrb.mcts.uct" = "mcts.uct:UCTWins"
+"jrb.mcts.uctv" = "mcts.uct:UCTValues"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["mcts"]
