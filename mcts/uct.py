@@ -1,14 +1,10 @@
-from __future__ import division
 
-from __future__ import absolute_import
-from __future__ import print_function
 import time
 from math import log, sqrt
 from random import choice
-from six.moves import range
 
 
-class Stat(object):
+class Stat:
     __slots__ = ('value', 'visits')
 
     def __init__(self, value=0.0, visits=0):
@@ -16,10 +12,10 @@ class Stat(object):
         self.visits = visits
 
     def __repr__(self):
-        return u"Stat(value={}, visits={})".format(self.value, self.visits)
+        return f"Stat(value={self.value}, visits={self.visits})"
 
 
-class UCT(object):
+class UCT:
     def __init__(self, board, **kwargs):
         self.board = board
         self.history = []
